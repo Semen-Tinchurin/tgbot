@@ -29,7 +29,7 @@ def download_music(update: Update, context: CallbackContext, link):
     video_info = youtube_dl.YoutubeDL().extract_info(url=link, download=False)
     title = video_info['title'].replace(' ', '_')
 
-    #clear the title
+    # clear the title
     if "_[Lyric_Video]" in title:
         title = title.replace("_[Lyric_Video]", '')
     if "_(Official_Video)" in title:
