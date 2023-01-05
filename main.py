@@ -2,6 +2,7 @@ from telegram.ext import Updater, CommandHandler, MessageHandler, Filters
 from config import TOKEN
 import logging
 from music import *
+from weather import *
 
 updater = Updater(token=TOKEN, use_context=True)
 dispatcher = updater.dispatcher
@@ -21,9 +22,10 @@ def cancel(update: Update, context: CallbackContext):
 # Handlers
 start_handler = CommandHandler('start', start)
 dispatcher.add_handler(start_handler)
-ch = ConversationHandler(entry_points=[CommandHandler('getmp3', get_link)],
+ch = ConversationHandler(entry_points=[CommandHandler('getmp3', get_link), CommandHandler('getweather', get_city)],
                          states={
                              EXPECT_LINK: [MessageHandler(Filters.text, link_input_by_user)],
+                             EXPECT_CITY: [MessageHandler(Filters.text, send_weather)],
                          },
                          fallbacks=[CommandHandler('cancel', cancel)])
 dispatcher.add_handler(ch)

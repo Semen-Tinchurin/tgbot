@@ -1,12 +1,29 @@
-import pprint
 from datetime import datetime
 from config import WEATHER_KEY
 import requests
 import re
+from telegram import Update
+from telegram.ext import CallbackContext, ConversationHandler
 
-message = input('Enter city name or coordinates: ')
 TIME_FORMAT = '%H:%M:%S'
 DATE_FORMAT = '%A, %d-%m-%Y'
+EXPECT_CITY = range(1)
+WEATHER_DICT = {
+    'clear sky': '☀',
+    'few clouds': '🌤',
+    'scattered clouds': '⛅',
+    'broken clouds': '🌥',
+    'shower rain': '🌧',
+    'rain': '🌧',
+    'thunderstorm': '⛈',
+    'mist': '🌫',
+    'snow': '❄',
+}
+
+
+def get_city(update: Update, context: CallbackContext):
+    context.bot.send_message(chat_id=update.effective_chat.id, text="Send me city name or coordinates")
+    return EXPECT_CITY
 
 
 def get_weather(WEATHER_KEY, message):
@@ -23,10 +40,10 @@ def get_weather(WEATHER_KEY, message):
     return response
 
 
-def clear_data():
-    response = get_weather(WEATHER_KEY, message=message)
-    if response['cod'] == 200:
-        # pprint.pprint(response)
+def send_weather(update: Update, context: CallbackContext):
+    response = get_weather(WEATHER_KEY, message=update.message.text)
+    if int(response['cod']) == 200:
+
         city_name = response['name']
         temperature = response['main']['temp']
         feels_like = response['main']['feels_like']
@@ -35,13 +52,12 @@ def clear_data():
         sunset = datetime.fromtimestamp(response['sys']['sunset']).strftime(TIME_FORMAT)
         sunrise = datetime.fromtimestamp(response['sys']['sunrise']).strftime(TIME_FORMAT)
         description = response['weather'][0]['description']
-        print(f'Today {weekday} in {city_name}: {description}')
-        print(f'Temperature - {temperature}°C \nFeels like - {feels_like}°C')
-        print(f'Humidity - {humidity}% \nSunrise at {sunrise} \nSunset at {sunset}')
 
+        context.bot.send_message(chat_id=update.effective_chat.id,
+                                 text=f'Today {weekday} \nIn {city_name}: {description}\n'
+                                      f'🌡️ Temperature: {temperature}°C \n🌡️ Feels like: {feels_like}°C\n'
+                                      f'💧 Humidity: {humidity}% \n🌅 Sunrise at {sunrise} \n🌇 Sunset at {sunset}')
     else:
-        pprint.pprint(response)
         error_message = response['message']
-
-
-clear_data()
+        context.bot.send_message(chat_id=update.effective_chat.id, text=error_message)
+    return ConversationHandler.END
