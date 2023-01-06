@@ -32,5 +32,11 @@ dispatcher.add_handler(ch)
 end_handler = CommandHandler('cancel', cancel)
 dispatcher.add_handler(end_handler)
 
-updater.start_polling()
-updater.idle()
+
+def main():
+    updater.start_polling()
+    updater.idle()
+
+
+if __name__ == main():
+    main()
